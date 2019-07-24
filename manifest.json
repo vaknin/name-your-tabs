@@ -1,0 +1,35 @@
+{
+    "manifest_version": 2,
+    "name": "tempname",
+    "description": "tempdesc",
+    "version": "1.00",
+    "content_scripts": [
+      {
+        "matches": [
+          "<all_urls>"
+        ],
+        "js": ["./scripts/content.js"]
+      }
+    ],
+    "background": {
+      "scripts": ["./scripts/background.js"],
+      "persistent": false
+    },
+    "icons": {
+      "16": "./images/icon.png",
+      "48": "./images/icon.png",
+      "128": "./images/icon.png"
+    },
+    "commands": {
+      "toggle-edit-mode": {
+        "suggested_key": {
+          "default": "Ctrl+Shift+E",
+          "mac": "Command+Shift+E"
+        },
+        "description": "Toggle Naming Mode"
+      }
+    },
+    "permissions": [
+      "tabs", "storage"
+    ]
+  }
