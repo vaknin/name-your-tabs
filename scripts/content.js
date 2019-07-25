@@ -15,13 +15,15 @@ chrome.runtime.onMessage.addListener(msg => {
 // Listen for the client's keystrokes
 document.addEventListener('keydown', e => {
 
+    // If not in edit mode, do nothing
     if (!naming){
         return;
     }
 
-    let title = document.title;
+    // Prevent browser's default behavior while editing
+    e.preventDefault();
 
-    //console.log(e.which);
+    let title = document.title;
 
     // Escape/Enter to confirm
     if (e.which == 27 || e.which == 13){
@@ -42,7 +44,7 @@ document.addEventListener('keydown', e => {
         space = true;
     }
 
-    // Any ASCII key
+    // Write the key to the title
     else if (e.key.length == 1){
 
         // Add Spaces
@@ -60,6 +62,16 @@ document.addEventListener('keydown', e => {
 // Toggle the naming mode
 function toggleNamingMode(){
 
+    function changeFavicon(src) {
+        var link = document.querySelector("link[rel*='icon']") || document.createElement('link');
+        link.type = 'image/x-icon';
+        link.rel = 'shortcut icon';
+        link.href = 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Ski_trail_rating_symbol-green_circle.svg/1024px-Ski_trail_rating_symbol-green_circle.svg.png';
+        document.getElementsByTagName('head')[0].appendChild(link);
+    }
+
+    changeFavicon('/images/red-circle.png');
+
     // In toggle mode, delete asterisk
     if (naming){
         document.title = document.title.slice(1);
@@ -67,7 +79,7 @@ function toggleNamingMode(){
 
     // Start naming mode
     else{
-        document.title = '*' + document.title;
+        document.title = '*';
     }
 
     naming = !naming;
