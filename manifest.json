@@ -21,6 +21,7 @@
       "128": "./images/icon.png"
     },
     "commands": {
+
       "toggle-edit-mode": {
         "suggested_key": {
           "default": "Ctrl+Shift+E",
@@ -28,26 +29,21 @@
         },
         "description": "Toggle Naming Mode"
       },
-      "favicon-red": {
+
+      "sort-by-color": {
         "suggested_key": {
-          "default": "Ctrl+Shift+1",
-          "mac": "Command+Shift+1"
+          "default": "Ctrl+Shift+S",
+          "mac": "Command+Shift+S"
         },
-        "description": "Set the favicon to red"
+        "description": "Sort tabs by favicon color"
       },
-      "favicon-yellow": {
+
+      "toggle-color": {
         "suggested_key": {
-          "default": "Ctrl+Shift+2",
-          "mac": "Command+Shift+2"
+          "default": "Ctrl+Shift+A",
+          "mac": "Command+Shift+A"
         },
-        "description": "Set the favicon to yellow"
-      },
-      "favicon-green": {
-        "suggested_key": {
-          "default": "Ctrl+Shift+3",
-          "mac": "Command+Shift+3"
-        },
-        "description": "Set the favicon to green"
+        "description": "Toggle favicon's color"
       }
     },
     "permissions": [
