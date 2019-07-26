@@ -2,15 +2,15 @@
 
 #### A tab manager for chrome that allows you to work, clutter-free.  
 ##### Name your tabs, you can be as creative as you want  
-[name]: link "Naming Mode"
+[name]: https://raw.githubusercontent.com/vaknin/name-your-tabs/master/gifs/name.gif "Naming Mode"
 ![Naming Mode][name]
 
 ##### Dynamically change the tab's icon  
-[favicon]: link "Change Favicon"
+[favicon]: https://raw.githubusercontent.com/vaknin/name-your-tabs/master/gifs/favicon.gif "Change Favicon"
 ![Change Favicon][favicon]
 
 ##### Sort all of your tabs with a keystroke, in order of importance  
-[sort]: link "Sort tabs"
+[sort]: https://raw.githubusercontent.com/vaknin/name-your-tabs/master/gifs/sort.gif "Sort tabs"
 ![Sort tabs][sort]
 
 #### How to use  

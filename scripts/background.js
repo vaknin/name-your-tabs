@@ -126,11 +126,22 @@ chrome.commands.onCommand.addListener(async command => {
             let redTabs = [];
             let yellowTabs = [];
             let greenTabs = [];
+            let index = 0;
 
             // Get the current active window's ID
             await new Promise(resolve => {
                 chrome.windows.getCurrent(null, window => {
                     resolve(activeWindow = window.id);
+                });
+            });
+
+            // Get the number of pinned tabs
+            await new Promise(resolve => {
+                chrome.tabs.query({ currentWindow: true }, tabs => {
+                    for (let tab of tabs){
+                        if (tab.pinned) index++;
+                    }
+                    resolve();
                 });
             });
 
@@ -156,12 +167,13 @@ chrome.commands.onCommand.addListener(async command => {
                 }
             }
 
-            let index = 0;
             let tabColors = [redTabs, yellowTabs, greenTabs];
 
             // Iterate through all the red, yellow and green tabs, by order
             for (let tc of tabColors){
                 for (let tab of tc){
+                    console.log(index);
+                    
                     let moved = await move(tab, index);
                     if (moved) index++;
                 }
