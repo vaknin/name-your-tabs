@@ -74,63 +74,44 @@ chrome.commands.onCommand.addListener(async command => {
     // Sort by favicon color
     else if (command == 'sort-by-color'){
 
-        let activeWindow,index;
-        indexR = 0;
-        indexY = 1;
-        indexG = 2;
+        let activeWindow;
 
         // Moves the tab
-        async function move(item){
+        async function move(item, index){
 
-            // Get the ID of the current item
-            let id = parseInt(Object.keys(item)[0]);
+            return new Promise(async resolve => {
 
-            // Get the color of the current item
-            let color = item[id];
+                // Get the ID of the current item
+                let id = parseInt(Object.keys(item)[0]);
 
-            // Change tab's location based on color
-            switch(color){
+                // Syncronously move the tab
+                let moved = await new Promise(resolve => {
+                    
+                    // Get the item's tab object
+                    chrome.tabs.get(id, tab => {
 
-                // Red
-                case 'red':
-                    index = indexR;
-                break;
-                // Yellow
-                case 'yellow':
-                    index = indexY;
-                break;
-                // Green
-                case 'green':
-                    index = indexG;
-                break;
-            }
+                        // Check whether the tab is in the current chrome window
+                        if (tab.windowId == activeWindow){
+                            let moveProperties = {
+                                windowId: undefined,
+                                index
+                            };
+                            
+                            // Tab moved, return true
+                            chrome.tabs.move(id, moveProperties, () => {
+                                resolve(true);
+                            });
+                        }
 
-            // Syncronously move the tab
-            await new Promise(resolve => {
-                
-                // Get the item's tab object
-                chrome.tabs.get(id, tab => {
-
-                    // Check whether the tab is in the current chrome window
-                    if (tab.windowId == activeWindow){
-                        let moveProperties = {
-                            windowId: undefined,
-                            index
-                        };
-                        chrome.tabs.move(id, moveProperties, () => {
-                            resolve();
-                        });
-                    }
-
-                    else resolve();
+                        // Tab didn't move, return false
+                        else resolve(false);
+                    });
                 });
-            });
 
-            // Increment indices
+                // Return whether the tab has been moved
+                resolve(moved);
+            });
             
-            indexR++;
-            indexY++;
-            indexG++;
         }
 
         // Retrieve all of the favicon colors from storage
@@ -139,6 +120,10 @@ chrome.commands.onCommand.addListener(async command => {
             // If there are no favicons set, return
             if (Object.keys(items).length == 0) return;
 
+            let redTabs = [];
+            let yellowTabs = [];
+            let greenTabs = [];
+
             // Get the current active window's ID
             await new Promise(resolve => {
                 chrome.windows.getCurrent(null, window => {
@@ -146,12 +131,37 @@ chrome.commands.onCommand.addListener(async command => {
                 });
             });
 
-            // Loop through all marked tabs
+            // Iterate through all items, and sort by color
             for (let i = 0; i < Object.keys(items).length; i++){
                 let key = Object.keys(items)[i];
+                let color = items[key];
                 let item = {[key]: items[key]};
-                move(item);
-                console.log(indexR,indexY,indexG);
+                switch(color){
+
+                    // Red
+                    case 'red':
+                        redTabs.push(item);
+                    break;
+                    // Yellow
+                    case 'yellow':
+                        yellowTabs.push(item);
+                    break;
+                    // Green
+                    case 'green':
+                        greenTabs.push(item);
+                    break;
+                }
+            }
+
+            let index = 0;
+            let tabColors = [redTabs, yellowTabs, greenTabs];
+
+            // Iterate through all the red, yellow and green tabs, by order
+            for (let tc of tabColors){
+                for (let tab of tc){
+                    let moved = await move(tab, index);
+                    if (moved) index++;
+                }
             }
         });
     }
