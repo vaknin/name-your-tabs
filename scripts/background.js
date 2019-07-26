@@ -55,8 +55,11 @@ chrome.commands.onCommand.addListener(async command => {
                     }
                 }
     
-                // If the favicon has no color, default to red
-                else color = 'red';
+                // If the favicon is not set, save the favicon and default to red //todo
+                else{
+                    color = 'red';
+                } 
+                    
                 resolve();
             });
         });

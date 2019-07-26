@@ -1,7 +1,7 @@
 {
     "manifest_version": 2,
-    "name": "tempname",
-    "description": "tempdesc",
+    "name": "Name Your Tabs",
+    "description": "Organize your tabs, work more efficiently.",
     "version": "1.00",
     "content_scripts": [
       {
