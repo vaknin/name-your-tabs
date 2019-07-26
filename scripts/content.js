@@ -7,8 +7,15 @@ let space = false;
 
 // Communicate with Background.js
 chrome.runtime.onMessage.addListener(msg => {
-    if (msg == 'toggle'){
+
+    // Enter and leave naming mode
+    if (msg.action == 'toggle'){
         toggleNamingMode();
+    }
+
+    // Change the favicon
+    else if (msg.action == 'favicon'){
+        changeFavicon(msg.data);
     }
 });
 
@@ -62,16 +69,6 @@ document.addEventListener('keydown', e => {
 // Toggle the naming mode
 function toggleNamingMode(){
 
-    function changeFavicon(src) {
-        var link = document.querySelector("link[rel*='icon']") || document.createElement('link');
-        link.type = 'image/x-icon';
-        link.rel = 'shortcut icon';
-        link.href = 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Ski_trail_rating_symbol-green_circle.svg/1024px-Ski_trail_rating_symbol-green_circle.svg.png';
-        document.getElementsByTagName('head')[0].appendChild(link);
-    }
-
-    changeFavicon('/images/red-circle.png');
-
     // In toggle mode, delete asterisk
     if (naming){
         document.title = document.title.slice(1);
@@ -83,6 +80,48 @@ function toggleNamingMode(){
     }
 
     naming = !naming;
+}
+
+// Dynamically set the tab's favicon
+function changeFavicon(color) {
+
+    // Grab the appropriate favicon color image
+    switch (color){
+        case 'red':
+            color = 'https://raw.githubusercontent.com/vaknin/name-your-tabs/master/images/red-circle.png';
+            break;
+        case 'yellow':
+            color = 'https://raw.githubusercontent.com/vaknin/name-your-tabs/master/images/yellow-circle.png';
+            break;
+        case 'green':
+            color = 'https://raw.githubusercontent.com/vaknin/name-your-tabs/master/images/green-circle.png';
+            break;
+    }
+
+    // Get all webpage's icons
+    let icons = document.querySelectorAll("link[rel*='icon']");
+
+    // There are already favicons, change the existing ones
+    if (icons.length > 0){
+        for (let icon of icons){
+
+            // Set new icon
+            icon.href = color;
+        }
+    }
+
+    // Currently, there is no favicon - create a new element
+    else{
+        let link = document.createElement('link');
+
+        // Set favicon properties
+        link.type = 'image/x-icon';
+        link.rel = 'shortcut icon';
+        link.href = color;
+
+        // Add to document's head
+        document.getElementsByTagName('head')[0].appendChild(link);
+    }
 }
 
 //#endregion

@@ -27,6 +27,27 @@
           "mac": "Command+Shift+E"
         },
         "description": "Toggle Naming Mode"
+      },
+      "favicon-red": {
+        "suggested_key": {
+          "default": "Ctrl+Shift+1",
+          "mac": "Command+Shift+1"
+        },
+        "description": "Set the favicon to red"
+      },
+      "favicon-yellow": {
+        "suggested_key": {
+          "default": "Ctrl+Shift+2",
+          "mac": "Command+Shift+2"
+        },
+        "description": "Set the favicon to yellow"
+      },
+      "favicon-green": {
+        "suggested_key": {
+          "default": "Ctrl+Shift+3",
+          "mac": "Command+Shift+3"
+        },
+        "description": "Set the favicon to green"
       }
     },
     "permissions": [
