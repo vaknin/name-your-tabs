@@ -28,8 +28,7 @@ chrome.commands.onCommand.addListener(async command => {
             tabs[0].favIconUrl;
         });
 
-        let color;
-        let obj = {};
+        let tab = {};
 
         // Get tab's current favicon color
         await new Promise(resolveouter => {
@@ -37,38 +36,49 @@ chrome.commands.onCommand.addListener(async command => {
             // Async fetch current tab's favicon color
             chrome.storage.local.get([tabID], async result => {
 
-                // Check if a color exists
+                // The tab object exists in local storage
                 if (Object.keys(result).length != 0){
 
                     // Switch to the next color
-                    result = result[tabID];
-                    obj = result;
-                    
-                    switch (obj.color){
+                    tab = result[tabID];
+
+                    // Create a new color property
+                    if (!tab.color){
+                        await new Promise(resolveinner => {
+                            chrome.tabs.query({ currentWindow: true, active: true }, tabs => {
+                                tab.url = tabs[0].favIconUrl;
+                                tab.color = 'red';
+                                resolveinner();
+                            });
+                        });
+                    }
+
+                    // A color propety already exists for the tab
+                    else switch (tab.color){
                         case 'original':
-                            obj.color = 'red';
+                            tab.color = 'red';
                         break;
 
                         case 'red':
-                            obj.color = 'yellow';
+                            tab.color = 'yellow';
                         break;
 
                         case 'yellow':
-                            obj.color = 'green';
+                            tab.color = 'green';
                         break;
 
                         case 'green':
-                            obj.color = 'original';
-                            msg.url = obj.originalFav;
+                            tab.color = 'original';
+                            msg.url = tab.url;
                         break;
                     }
                 }
     
-                // If the favicon is not set, save the favicon and default to red
+                // The tab object doesn't exist in local storage
                 else await new Promise(resolveinner => {
                     chrome.tabs.query({ currentWindow: true, active: true }, tabs => {
-                        obj.originalFav = tabs[0].favIconUrl;
-                        obj.color = 'red';
+                        tab.url = tabs[0].favIconUrl;
+                        tab.color = 'red';
                         resolveinner();
                     });
                 });
@@ -76,15 +86,15 @@ chrome.commands.onCommand.addListener(async command => {
                 resolveouter();
             });
         });
-
+        
         // Set color in storage
-        chrome.storage.local.set({[tabID]: obj});
+        chrome.storage.local.set({[tabID]: tab});
 
         // Communicate with content.js
         msg.action = 'favicon';
 
         // The chosen color
-        msg.data = obj.color;
+        msg.data = tab.color;
     }
 
     // Sort by favicon color
@@ -196,4 +206,42 @@ chrome.commands.onCommand.addListener(async command => {
 
     // Send the message to content.js
     chrome.tabs.sendMessage(parseInt(tabID), msg);
- });
+});
+
+// Receive data from the content script
+chrome.runtime.onMessage.addListener(async (msg, sender) => {
+
+    // Update tab's title
+    if (msg.action == 'title'){
+
+        let tab = {};
+
+        // Fetch the tab
+        await new Promise(resolve => {
+            chrome.storage.local.get([sender.tab.id.toString()], result => {
+
+                // If the tab exists in local storage, load it
+                if (Object.keys(result).length != 0){
+                    tab = result[sender.tab.id];
+                }
+                resolve();
+            });
+        });
+
+        // Update the tab
+        tab.title = msg.data;
+
+        // Update tab's title in storage
+        chrome.storage.local.set({[sender.tab.id.toString()]: tab});
+    }
+});
+
+// A tab has been updated
+chrome.tabs.onUpdated.addListener(async (tabID, changeInfo, tab) => {
+
+    await new Promise(resolve => {
+        chrome.storage.local.get([tabID.toString()], result => {
+            resolve();
+        });
+    });
+});

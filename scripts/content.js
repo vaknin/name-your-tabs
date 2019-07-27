@@ -1,9 +1,10 @@
-//#region Variables
-
-let naming = false;
-let space = false;
-
-//#endregion
+const tab = {
+    title: document.title,
+    color: undefined,
+    url: undefined,
+    naming: false,
+    space: false
+};
 
 // Communicate with Background.js
 chrome.runtime.onMessage.addListener(msg => {
@@ -23,7 +24,7 @@ chrome.runtime.onMessage.addListener(msg => {
 document.addEventListener('keydown', e => {
 
     // If not in edit mode, do nothing
-    if (!naming){
+    if (!tab.naming){
         return;
     }
 
@@ -32,8 +33,14 @@ document.addEventListener('keydown', e => {
 
     let title = document.title;
 
-    // Escape/Enter to confirm
-    if (e.which == 27 || e.which == 13){
+    // Escape to acncel
+    if (e.which == 27){
+        tab.naming = !tab.naming;
+        document.title = tab.title;
+    }
+
+    // Enter to save
+    if (e.which == 13){
         toggleNamingMode();
     }
 
@@ -48,16 +55,16 @@ document.addEventListener('keydown', e => {
 
     // Space
     else if (e.which == 32){
-        space = true;
+        tab.space = true;
     }
 
     // Write the key to the title
     else if (e.key.length == 1){
 
         // Add Spaces
-        if (space){
+        if (tab.space){
             title += ' ';
-            space = false;
+            tab.space = false;
         }
 
         document.title = title + e.key;
@@ -69,25 +76,34 @@ document.addEventListener('keydown', e => {
 // Toggle the naming mode
 function toggleNamingMode(){
 
-    // In toggle mode, delete asterisk
-    if (naming){
+    // Confirm name change
+    if (tab.naming){
+
+        // Change title
         document.title = document.title.slice(1);
+        tab.title = document.title;
+
+        // Send new title to background.js
+        let msg = {action: "title", data: tab.title};
+        chrome.runtime.sendMessage(msg);
     }
 
     // Start naming mode
-    else{
-        document.title = '*';
-    }
+    else document.title = '*';
 
-    naming = !naming;
+    tab.naming = !tab.naming;
 }
 
 // Dynamically set the tab's favicon
 function changeFavicon(color, url) {
 
+    tab.color = color;
+    tab.url = url;
+
     // If a URL was specified, use it as the favicon's source
     if (url){
         color = url;
+        tab.color = 'original';
     }
 
     // Grab the appropriate favicon color image
@@ -115,7 +131,7 @@ function changeFavicon(color, url) {
         }
     }
 
-    // Currently, there is no favicon - create a new element
+    // Create a new favicon element
     else{
         let link = document.createElement('link');
 
