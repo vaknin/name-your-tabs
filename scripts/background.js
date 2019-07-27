@@ -1,8 +1,3 @@
-// Global Variables
-let indexR;
-let indexY;
-let indexG;
-
 // Clear storage
 chrome.storage.local.clear();
 
@@ -23,7 +18,7 @@ chrome.commands.onCommand.addListener(async command => {
     //Toggle Edit Mode Keyboard Shortcut
     if (command == 'toggle-edit-mode'){
 
-        msg.action = 'toggle';
+        msg.action = 'name-mode';
     }
 
     // Dynamically set favicons

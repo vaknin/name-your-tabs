@@ -9,7 +9,7 @@ let space = false;
 chrome.runtime.onMessage.addListener(msg => {
 
     // Enter and leave naming mode
-    if (msg.action == 'toggle'){
+    if (msg.action == 'name-mode'){
         toggleNamingMode();
     }
 
