@@ -72,19 +72,18 @@ chrome.commands.onCommand.addListener(async command => {
     // Sort by favicon color
     else if (command == 'sort-by-color'){
 
+        // Only sort tabs in the current window
         let activeWindow;
 
-        // Moves the tab
-        async function move(item, index){
+        // Changes the tab's index
+        async function move(id, index){
 
+            // Return whether the tab has been moved
             return new Promise(async resolve => {
-
-                // Get the ID of the current item
-                let id = parseInt(Object.keys(item)[0]);
 
                 // Syncronously move the tab
                 let moved = await new Promise(resolve => {
-                    
+
                     // Get the item's tab object
                     chrome.tabs.get(id, tab => {
 
@@ -101,27 +100,21 @@ chrome.commands.onCommand.addListener(async command => {
                             });
                         }
 
-                        // Tab didn't move, return false
+                        // Tab is not in the current window, return false
                         else resolve(false);
                     });
                 });
 
-                // Return whether the tab has been moved
                 resolve(moved);
             });
             
         }
 
-        // Retrieve all of the favicon colors from storage
+        // Retrieve all marked tabs from local storage
         return chrome.storage.local.get(null, async items => {
 
             // If there are no favicons set, return
             if (Object.keys(items).length == 0) return;
-
-            let redTabs = [];
-            let yellowTabs = [];
-            let greenTabs = [];
-            let index = 0;
 
             // Get the current active window's ID
             await new Promise(resolve => {
@@ -130,47 +123,54 @@ chrome.commands.onCommand.addListener(async command => {
                 });
             });
 
-            // Get the number of pinned tabs
+            // Keep track of number of marked tabs, by color
+            let count = { r: 0, y: 0, g: 0 };
+            let pinCount = 0;
+
+            // Account for pinned tabs, as they preceed all other tabs - regardless of importance
             await new Promise(resolve => {
                 chrome.tabs.query({ currentWindow: true }, tabs => {
                     for (let tab of tabs){
-                        if (tab.pinned) index++;
+                        if (tab.pinned){
+                            pinCount++;
+                        }
                     }
+                    count.r = pinCount;
+                    count.y = pinCount;
+                    count.g = pinCount;
                     resolve();
                 });
             });
 
-            // Iterate through all items, and sort by color
+            // Iterate through all items
             for (let i = 0; i < Object.keys(items).length; i++){
-                let key = Object.keys(items)[i];
-                let color = items[key];
-                let item = {[key]: items[key]};
+                let id = parseInt(Object.keys(items)[i]);
+                let color = items[id];
+                let moved;
+                
+                // Sort by color
                 switch(color){
 
-                    // Red
+                    // Red tabs
                     case 'red':
-                        redTabs.push(item);
+                        // Move to rcount, always ignore other colors
+                        moved = await move(id, count.r);
+                        if (moved) count.r++;
                     break;
-                    // Yellow
+
+                    // Yellow tabs
                     case 'yellow':
-                        yellowTabs.push(item);
+                        // Move to rcount+ycount (deduct pinned tabs, if they exist)
+                        moved = await move(id, (count.r + count.y) - pinCount);
+                        if (moved) count.y++;
                     break;
-                    // Green
+
+                    // Green tabs
                     case 'green':
-                        greenTabs.push(item);
+                        //Move to rcount+ycount+gcount (deduct pinned tabs twice, if they exist)
+                        moved = await move(id, (count.r + count.y + count.g) - pinCount * 2);
+                        if (moved) count.g++;
                     break;
-                }
-            }
-
-            let tabColors = [redTabs, yellowTabs, greenTabs];
-
-            // Iterate through all the red, yellow and green tabs, by order
-            for (let tc of tabColors){
-                for (let tab of tc){
-                    console.log(index);
-                    
-                    let moved = await move(tab, index);
-                    if (moved) index++;
                 }
             }
         });
