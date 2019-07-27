@@ -24,49 +24,67 @@ chrome.commands.onCommand.addListener(async command => {
     // Dynamically set favicons
     else if (command == 'toggle-color'){
 
+        chrome.tabs.query({ currentWindow: true, active: true }, tabs => {
+            tabs[0].favIconUrl;
+        });
+
         let color;
+        let obj = {};
 
         // Get tab's current favicon color
-        await new Promise(resolve => {
+        await new Promise(resolveouter => {
 
             // Async fetch current tab's favicon color
-            chrome.storage.local.get([tabID], result => {
+            chrome.storage.local.get([tabID], async result => {
 
                 // Check if a color exists
                 if (Object.keys(result).length != 0){
 
                     // Switch to the next color
                     result = result[tabID];
-                    switch (result){
+                    obj = result;
+                    
+                    switch (obj.color){
+                        case 'original':
+                            obj.color = 'red';
+                        break;
+
                         case 'red':
-                            color = 'yellow';
-                            break;
+                            obj.color = 'yellow';
+                        break;
+
                         case 'yellow':
-                            color = 'green';
-                            break;
+                            obj.color = 'green';
+                        break;
+
                         case 'green':
-                            color = 'red';
-                            break;
+                            obj.color = 'original';
+                            msg.url = obj.originalFav;
+                        break;
                     }
                 }
     
-                // If the favicon is not set, save the favicon and default to red //todo
-                else{
-                    color = 'red';
-                } 
-                    
-                resolve();
+                // If the favicon is not set, save the favicon and default to red
+                else await new Promise(resolveinner => {
+                    chrome.tabs.query({ currentWindow: true, active: true }, tabs => {
+                        obj.originalFav = tabs[0].favIconUrl;
+                        obj.color = 'red';
+                        resolveinner();
+                    });
+                });
+
+                resolveouter();
             });
         });
 
         // Set color in storage
-        chrome.storage.local.set({[tabID]: color});
+        chrome.storage.local.set({[tabID]: obj});
 
         // Communicate with content.js
         msg.action = 'favicon';
 
         // The chosen color
-        msg.data = color;
+        msg.data = obj.color;
     }
 
     // Sort by favicon color
@@ -145,7 +163,7 @@ chrome.commands.onCommand.addListener(async command => {
             // Iterate through all items
             for (let i = 0; i < Object.keys(items).length; i++){
                 let id = parseInt(Object.keys(items)[i]);
-                let color = items[id];
+                let color = items[id].color;
                 let moved;
                 
                 // Sort by color

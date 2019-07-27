@@ -15,7 +15,7 @@ chrome.runtime.onMessage.addListener(msg => {
 
     // Change the favicon
     else if (msg.action == 'favicon'){
-        changeFavicon(msg.data);
+        changeFavicon(msg.data, msg.url);
     }
 });
 
@@ -83,19 +83,24 @@ function toggleNamingMode(){
 }
 
 // Dynamically set the tab's favicon
-function changeFavicon(color) {
+function changeFavicon(color, url) {
+
+    // If a URL was specified, use it as the favicon's source
+    if (url){
+        color = url;
+    }
 
     // Grab the appropriate favicon color image
     switch (color){
         case 'red':
             color = 'https://raw.githubusercontent.com/vaknin/name-your-tabs/master/images/red-circle.png';
-            break;
+        break;
         case 'yellow':
             color = 'https://raw.githubusercontent.com/vaknin/name-your-tabs/master/images/yellow-circle.png';
-            break;
+        break;
         case 'green':
             color = 'https://raw.githubusercontent.com/vaknin/name-your-tabs/master/images/green-circle.png';
-            break;
+        break;
     }
 
     // Get all webpage's icons
