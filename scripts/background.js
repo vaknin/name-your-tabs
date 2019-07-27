@@ -170,7 +170,7 @@ chrome.commands.onCommand.addListener(async command => {
                 });
             });
 
-            // Iterate through all items
+            // Iterate through all open tabs
             for (let i = 0; i < Object.keys(items).length; i++){
                 let id = parseInt(Object.keys(items)[i]);
                 let color = items[id].color;
@@ -239,9 +239,32 @@ chrome.runtime.onMessage.addListener(async (msg, sender) => {
 // A tab has been updated
 chrome.tabs.onUpdated.addListener(async (tabID, changeInfo, tab) => {
 
+    let managedTab = {};
+
+    // Check if the updated tab is one of the managed tabs
     await new Promise(resolve => {
         chrome.storage.local.get([tabID.toString()], result => {
+            if (!result[tabID]){
+                return;
+            }
+            else managedTab = result[tabID];
             resolve();
         });
     });
+
+    // Tab has finished loading - update the content script with the needed changes, and save the new page's original favicon
+    if (tab.status == 'complete'){
+
+        if (tab.favIconUrl.includes('-circle.png')) return;
+
+        managedTab.url = tab.favIconUrl;
+        chrome.storage.local.set({[tabID.toString()]: managedTab});
+        
+        let msg = {
+            action: 'update',
+            title: managedTab.title,
+            color: managedTab.color == 'original' || managedTab.color == undefined ? undefined : managedTab.color
+        };
+        chrome.tabs.sendMessage(tabID, msg);
+    }
 });
